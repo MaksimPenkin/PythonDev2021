@@ -35,7 +35,7 @@ class Application(tk.Frame):
                                     text='Quit',
                                     activebackground='honeydew3',
                                     bg='honeydew4',
-                                    command=None)
+                                    command=self.quit)
         self.button_quit.grid(row=0, column=2, columnspan=2, sticky='NS')
 
         # Number buttons
