@@ -3,6 +3,7 @@
 """
 
 import tkinter as tk
+from tkinter import messagebox
 import random
 
 
@@ -63,8 +64,26 @@ class Application(tk.Frame):
         i, j = loc_empty // self.N, loc_empty % self.N
         self.empty = i+1, j
 
+    def check_status(self):
+        cnt = 0
+        # foreach play button
+        for idx in range(self.N*self.N - 1):
+            # take its current position
+            i, j = self.play_Buttons[idx].grid_info()["row"], self.play_Buttons[idx].grid_info()["column"]
+            i = i - 1
+
+            # take its target position
+            i_target, j_target = idx // self.N, idx % self.N
+
+            # if current position matches target position
+            if (i_target == i) and (j_target == j):
+                cnt = cnt + 1 # increment counter 
+
+        return cnt == (self.N*self.N - 1)
+    
     def push_Button_handler(self, idx):
         def handler():
+            # Implement movement
             i, j = self.play_Buttons[idx].grid_info()["row"], self.play_Buttons[idx].grid_info()["column"]
             i_empty, j_empty = self.empty
             movement = (i_empty - i, j_empty - j)
@@ -72,11 +91,14 @@ class Application(tk.Frame):
                 self.play_Buttons[idx].grid(row=i_empty, column=j_empty, sticky='NEWS')
                 self.empty = (i, j)
 
+            # Check game status
+            if self.check_status():
+                messagebox.showinfo('', 'You win!')
+
         return handler
 
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
-        self.victory = False
         self.N = 4
         # Grid configuration
         self.configure_grid()
