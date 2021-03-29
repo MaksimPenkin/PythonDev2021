@@ -45,9 +45,10 @@ class Application(tk.Frame):
                                                 text='{}'.format(idx+1),
                                                 activebackground='gold',
                                                 bg='goldenrod',
-                                                command=None)
+                                                command=self.push_Button_handler(idx))
             # set play button position on the grid
             self.play_Buttons[idx].grid(row=i+1, column=j, sticky='NEWS')
+        self.empty = (self.N, self.N - 1)
 
     def new_Button_handler(self):
         self.play_Buttons_position = random.sample(self.play_Buttons_position, self.N*self.N) # shuffle play buttons positions
@@ -57,6 +58,21 @@ class Application(tk.Frame):
             i, j = loc // self.N, loc % self.N
             # set play button position on the grid
             self.play_Buttons[idx].grid(row=i+1, column=j, sticky='NEWS')
+        
+        loc_empty = self.play_Buttons_position[-1]
+        i, j = loc_empty // self.N, loc_empty % self.N
+        self.empty = i+1, j
+
+    def push_Button_handler(self, idx):
+        def handler():
+            i, j = self.play_Buttons[idx].grid_info()["row"], self.play_Buttons[idx].grid_info()["column"]
+            i_empty, j_empty = self.empty
+            movement = (i_empty - i, j_empty - j)
+            if movement in [(0,1),(0,-1),(1,0),(-1,0)]:
+                self.play_Buttons[idx].grid(row=i_empty, column=j_empty, sticky='NEWS')
+                self.empty = (i, j)
+
+        return handler
 
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
