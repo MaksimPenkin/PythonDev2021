@@ -24,7 +24,11 @@ class Application(tk.Frame):
         
         for i in range(self.h):
             for j in range(self.w):
-                self.button_number[i][j] = tk.Button(master=self, text='Row: {0}; Column: {1}'.format(i+1, j+1), command=None)
+                self.button_number[i][j] = tk.Button(master=self,
+                                                    text='Row: {0}; Column: {1}'.format(i+1, j+1),
+                                                    activebackground='gold',
+                                                    bg='goldenrod',
+                                                    command=None)
                 self.button_number[i][j].grid(row=i, column=j, sticky='NSEW')
 
 app = Application()
