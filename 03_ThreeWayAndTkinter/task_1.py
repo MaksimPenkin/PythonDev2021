@@ -68,7 +68,7 @@ class Application(tk.Frame):
             i, j = self.play_Buttons[idx].grid_info()["row"], self.play_Buttons[idx].grid_info()["column"]
             i_empty, j_empty = self.empty
             movement = (i_empty - i, j_empty - j)
-            if movement in [(0,1),(0,-1),(1,0),(-1,0)]:
+            if movement in [(0,1),(0,-1), (1,0),(-1,0), (self.N-1,0),(1-self.N,0), (0, self.N-1), (0, 1-self.N)]:
                 self.play_Buttons[idx].grid(row=i_empty, column=j_empty, sticky='NEWS')
                 self.empty = (i, j)
 
