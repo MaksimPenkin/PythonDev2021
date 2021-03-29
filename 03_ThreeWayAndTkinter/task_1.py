@@ -94,6 +94,7 @@ class Application(tk.Frame):
             # Check game status
             if self.check_status():
                 messagebox.showinfo('', 'You win!')
+                self.new_Button_handler()
 
         return handler
 
