@@ -59,7 +59,7 @@ def constructWidget(master, name, widget_type, geometry, **kwargs):
             row, col = int(row), int(col)
             weight_row, weight_col = int(weight_row), int(weight_col)
             height, width = int(height), int(width)
-            # =======<Parse geometry here...>=======
+            # =======<Parse geometry finished.>=======
 
             self.grid(row=row, rowspan=height + 1, column=col, columnspan=width + 1, sticky=gravity)
             self.master.rowconfigure(row, weight=weight_row)
