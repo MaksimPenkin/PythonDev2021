@@ -14,6 +14,57 @@ def constructWidget(master, name, widget_type, geometry, **kwargs):
         def __init__(self, geometry, **kwargs):
             super().__init__(**kwargs)
 
+            # =======<Parse geometry here...>=======
+            a, b = geometry.split(':')
+
+            # Row part parse
+            if len(a.split('+')) > 1:
+                r_w, height = a.split('+')
+                if len(r_w.split('.')) > 1:
+                    row, weight_row = r_w.split('.')
+                else:
+                    row = r_w 
+                    weight_row = 1
+            else:
+                height = 0
+                r_w = a
+                if len(r_w.split('.')) > 1:
+                    row, weight_row = r_w.split('.')
+                else:
+                    row = r_w 
+                    weight_row = 1
+
+            # Column part parse
+            if len(b.split('/')) > 1:
+                b, gravity = b.split('/')
+            else:
+                gravity = "NEWS"
+
+            if len(b.split('+')) > 1:
+                c_w, width = b.split('+')
+                if len(c_w.split('.')) > 1:
+                    col, weight_col = c_w.split('.')
+                else:
+                    col = c_w 
+                    weight_col = 1
+            else:
+                width = 0
+                c_w = b
+                if len(c_w.split('.')) > 1:
+                    col, weight_col = c_w.split('.')
+                else:
+                    col = c_w
+                    weight_col = 1
+
+            row, col = int(row), int(col)
+            weight_row, weight_col = int(weight_row), int(weight_col)
+            height, width = int(height), int(width)
+            # =======<Parse geometry here...>=======
+
+            self.grid(row=row, rowspan=height + 1, column=col, columnspan=width + 1, sticky=gravity)
+            self.master.rowconfigure(row, weight=weight_row)
+            self.master.columnconfigure(col, weight=weight_col)
+
         def __getattr__(self, name):
             return partial(constructWidget, self, name)
 
