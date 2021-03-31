@@ -3,6 +3,41 @@
 """
 
 import tkinter as tk
+from functools import partial
+
+
+def constructWidget(master, name, widget_type, geometry, **kwargs):
+    """
+        Dynamic widget constructor 
+    """
+    class ChildWidget(widget_type):
+        def __init__(self, geometry, **kwargs):
+            super().__init__(**kwargs)
+
+        def __getattr__(self, name):
+            return partial(constructWidget, self, name)
+
+    child_widget = ChildWidget(geometry, master=master, **kwargs)
+    setattr(master, name, child_widget)
+    return child_widget
+
+class Application(tk.Frame):
+    """
+        Base class for creating App
+    """
+    def __init__(self, title):
+        super().__init__(None)
+        self.grid(sticky="NEWS")
+        self.master.title(title)
+        self.master.rowconfigure(0, weight=1)
+        self.master.columnconfigure(0, weight=1)
+        self.createWidgets()
+
+    def __getattr__(self, name):
+        return partial(constructWidget, self, name)
+
+    def createWidgets(self):
+        raise NotImplementedError
 
 class App(Application):
     def createWidgets(self):
@@ -20,4 +55,5 @@ class App(Application):
 
 app = App(title="Sample application")
 app.mainloop()
+
 
