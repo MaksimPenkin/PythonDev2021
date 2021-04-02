@@ -65,12 +65,18 @@ class App(Application):
                                 justify='left', anchor='w', font="fixed")
         self.cursor = CustomCursor(self.mylabel, height=15, width=1, bg=CURSOR_COLOR)
         self.cursor.set_position(1)
+        self.focus_set()
+        self.cursor.focus_set()
         
         self.quit_Button.grid(row=1, column=0)
         self.mylabel.grid(row=0, column=0, sticky="EW")
 
-        self.bind("<Button-1>", lambda e: self.mouse_click_out_label())
         self.mylabel.bind("<Button-1>", lambda e: self.mouse_click_label(e))
+        self.bind("<Button-1>", lambda e: self.mouse_click_out_label())
+        self.bind_all("<Left>", lambda e: self.move_left())
+        self.bind_all("<Right>", lambda e: self.move_right())
+        self.bind_all("<Home>", lambda e: self.move_home())
+        self.bind_all("<End>", lambda e: self.move_end())
 
     def mouse_click_label(self, e):
         self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
@@ -78,7 +84,26 @@ class App(Application):
         self.cursor.set_position(cursor_pos_new)
 
     def mouse_click_out_label(self):
+        self.cursor.set_position(1)
         self.mylabel.config(background=LABEL_INACTIVE_COLOR, relief="flat")
+
+    def move_left(self):
+        self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
+        cursor_pos_new = max(self.cursor.pos - WIDTH_CHAR_PIX, 0)
+        self.cursor.set_position(cursor_pos_new)
+
+    def move_right(self):
+        self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
+        cursor_pos_new = min(self.cursor.pos + WIDTH_CHAR_PIX, len(self.s) * WIDTH_CHAR_PIX)
+        self.cursor.set_position(cursor_pos_new)
+
+    def move_home(self):
+        self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
+        self.cursor.set_position(1)
+
+    def move_end(self):
+        self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
+        self.cursor.set_position(len(self.s) * WIDTH_CHAR_PIX)
 
 if __name__ == "__main__":
     app = App()
