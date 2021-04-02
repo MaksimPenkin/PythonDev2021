@@ -41,6 +41,17 @@ class CustomCursor(tk.Frame):
         self.place(x=self.pos)
         return 
 
+    def move_left(self):
+        cursor_pos_new = max(self.pos - WIDTH_CHAR_PIX, 1)
+        self.set_position(cursor_pos_new)
+
+    def move_right(self, max_len=0):
+        cursor_pos_new = min(self.pos + WIDTH_CHAR_PIX, max_len)
+        self.set_position(cursor_pos_new)
+
+    def get_pos_in_chars(self):
+        return (self.pos // WIDTH_CHAR_PIX)
+
 class CustomTextDisplay:
     def __init__(self, text='<some text>'):
         self.text = text 
@@ -50,6 +61,9 @@ class CustomTextDisplay:
 
     def __len__(self):
         return len(self.text)
+
+    def __getitem__(self, k):
+        return self.text[k]
 
 class App(Application):
     def __init__(self, *args, **kwargs):
@@ -77,6 +91,7 @@ class App(Application):
         self.bind_all("<Right>", lambda e: self.move_right())
         self.bind_all("<Home>", lambda e: self.move_home())
         self.bind_all("<End>", lambda e: self.move_end())
+        self.bind_all("<BackSpace>", lambda e: self.backspace())
 
     def mouse_click_label(self, e):
         self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
@@ -89,13 +104,11 @@ class App(Application):
 
     def move_left(self):
         self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
-        cursor_pos_new = max(self.cursor.pos - WIDTH_CHAR_PIX, 0)
-        self.cursor.set_position(cursor_pos_new)
+        self.cursor.move_left()
 
     def move_right(self):
         self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
-        cursor_pos_new = min(self.cursor.pos + WIDTH_CHAR_PIX, len(self.s) * WIDTH_CHAR_PIX)
-        self.cursor.set_position(cursor_pos_new)
+        self.cursor.move_right(len(self.s) * WIDTH_CHAR_PIX)
 
     def move_home(self):
         self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
@@ -104,6 +117,17 @@ class App(Application):
     def move_end(self):
         self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
         self.cursor.set_position(len(self.s) * WIDTH_CHAR_PIX)
+
+    def backspace(self):
+        self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
+        p = self.cursor.get_pos_in_chars()
+        if p != 0:
+            p = p - 1
+            old_text = self.s.text
+            new_text = old_text[:p] + old_text[p+1:]
+            self.s.text = new_text
+            self.mylabel.config(text=str(self.s))
+            self.cursor.move_left()
 
 if __name__ == "__main__":
     app = App()
