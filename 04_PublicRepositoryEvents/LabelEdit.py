@@ -18,4 +18,14 @@ class Application(tk.Frame):
         self.createWidgets()
 
     def createWidgets(self):
-        pass
+        raise NotImplementedError
+
+class App(Application):
+    def createWidgets(self):
+        self.quit_Button = tk.Button(self, text='Quit', command=self.master.quit)
+        self.quit_Button.grid()
+
+if __name__ == "__main__":
+    app = App()
+    app.master.title('LabelEdit application')
+    app.mainloop()
