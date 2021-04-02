@@ -8,6 +8,7 @@ import random
 LABEL_ACTIVE_COLOR = 'light grey'
 LABEL_INACTIVE_COLOR = 'gray'
 CURSOR_COLOR = 'gray22'
+CURSOR_MIN_POS = 1
 WIDTH_CHAR_PIX = 5
 
 class Application(tk.Frame):
@@ -33,7 +34,7 @@ class CustomCursor(tk.Frame):
     def __init__(self, parent, height=15, width=1, bg=CURSOR_COLOR, **kwargs):
         super().__init__(parent, height=height, width=width, bg=bg, **kwargs) 
         self.pos = 0
-        self.place(x=5)
+        self.place(x=CURSOR_MIN_POS)
         
     def set_position(self, p):
         self.place_forget()
@@ -42,7 +43,7 @@ class CustomCursor(tk.Frame):
         return 
 
     def move_left(self):
-        cursor_pos_new = max(self.pos - WIDTH_CHAR_PIX, 1)
+        cursor_pos_new = max(self.pos - WIDTH_CHAR_PIX, CURSOR_MIN_POS)
         self.set_position(cursor_pos_new)
 
     def move_right(self, max_len=0):
@@ -78,7 +79,7 @@ class App(Application):
                                 borderwidth=2, relief="flat", background=LABEL_INACTIVE_COLOR,
                                 justify='left', anchor='w', font="fixed")
         self.cursor = CustomCursor(self.mylabel, height=15, width=1, bg=CURSOR_COLOR)
-        self.cursor.set_position(1)
+        self.cursor.set_position(CURSOR_MIN_POS)
         self.focus_set()
         self.cursor.focus_set()
         
@@ -92,6 +93,7 @@ class App(Application):
         self.bind_all("<Home>", lambda e: self.move_home())
         self.bind_all("<End>", lambda e: self.move_end())
         self.bind_all("<BackSpace>", lambda e: self.backspace())
+        self.bind_all("<Any-KeyPress>", lambda e: self.add_symbol(e))
 
     def mouse_click_label(self, e):
         self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
@@ -99,7 +101,7 @@ class App(Application):
         self.cursor.set_position(cursor_pos_new)
 
     def mouse_click_out_label(self):
-        self.cursor.set_position(1)
+        self.cursor.set_position(CURSOR_MIN_POS)
         self.mylabel.config(background=LABEL_INACTIVE_COLOR, relief="flat")
 
     def move_left(self):
@@ -128,6 +130,17 @@ class App(Application):
             self.s.text = new_text
             self.mylabel.config(text=str(self.s))
             self.cursor.move_left()
+
+    def add_symbol(self, e):
+        c = e.char
+
+        self.mylabel.config(relief="sunken", background=LABEL_ACTIVE_COLOR)
+        p = self.cursor.get_pos_in_chars()
+        old_text = self.s.text
+        new_text = old_text[:p] + str(c) + old_text[p:]
+        self.s.text = new_text
+        self.mylabel.config(text=str(self.s))
+        self.cursor.move_right(len(self.s) * WIDTH_CHAR_PIX)
 
 if __name__ == "__main__":
     app = App()
