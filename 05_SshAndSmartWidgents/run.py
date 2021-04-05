@@ -4,6 +4,14 @@
 
 import tkinter as tk
 
+class CustomText(tk.Text):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs) 
+
+class CustomCanvas(tk.Canvas):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs) 
+
 class Application(tk.Frame):
     """
         Base class for creating App
@@ -34,8 +42,8 @@ class App(Application):
 
         self.label1 = tk.Label(self, text='TXT field', background='SkyBlue1')
         self.label2 = tk.Label(self, text='Canvas field', background='pink1')
-        self.text = tk.Text(self, undo=True, font="fixed", inactiveselectbackground="MidnightBlue")
-        self.canvas = tk.Canvas(self)
+        self.text = CustomText(self, undo=True, font="fixed", inactiveselectbackground="MidnightBlue")
+        self.canvas = CustomCanvas(self)
 
         self.quit_Button.grid(row=0, column=0, sticky='NSEW')
         self.update_txt_Button.grid(row=1, column=0, sticky='NSEW')
