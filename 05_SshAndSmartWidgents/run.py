@@ -91,10 +91,15 @@ class CustomCanvas(tk.Frame):
             self.canvas.coords(self.pushed, x0+delta_x, y0+delta_y, x1+delta_x, y1+delta_y)
             self.ovals[self.pushed].update(delta_x, delta_y)
 
+    def destroyWidgets(self):
+        self.canvas.grid_forget()
+        self.cursor_info_label.grid_forget()
+
     def clear(self):
         self.canvas.delete("all")
         self.ovals = dict()
         self.pushed = None
+        self.destroyWidgets()
         self.createWidgets()
 
 class Application(tk.Frame):
