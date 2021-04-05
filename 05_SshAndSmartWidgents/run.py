@@ -4,6 +4,11 @@
 
 import tkinter as tk
 
+
+OVAL_COLOR = 'VioletRed1'
+MIN_RAD = 10
+EPS_OVERLAP = 3
+
 class Oval:
     def __init__(self, x_center, y_center, r):
         self.x_center = x_center
@@ -16,6 +21,22 @@ class Oval:
         self.x1 = self.x_center + self.r
         self.y1 = self.y_center + self.r
 
+    def get_tk_coords(self):
+        return (self.x0, self.y0, self.x1, self.y1)
+
+    def get_center_coords(self):
+        return (self.x_center, self.y_center)
+
+    def update(self, delta_x, delta_y):
+        self.x_center += delta_x
+        self.y_center += delta_y 
+
+        self.x0 += delta_x
+        self.y0 += delta_y
+
+        self.x1 += delta_x 
+        self.y1 += delta_y
+
 class CustomText(tk.Text):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs) 
@@ -26,7 +47,8 @@ class CustomText(tk.Text):
 class CustomCanvas(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs) 
-        self.ovals = []
+        self.ovals = dict()
+        self.pushed = None
 
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
@@ -49,20 +71,31 @@ class CustomCanvas(tk.Frame):
         self.canvas.bind("<Motion>", self.on_mouse_move)
 
     def on_mouse_left_push(self, e):
-        oval = Oval(e.x, e.y, 10)
-        self.ovals.append(self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1, fill='VioletRed1'))
+        found_overlaps = self.canvas.find_overlapping(e.x-EPS_OVERLAP, e.y-EPS_OVERLAP, e.x+EPS_OVERLAP, e.y+EPS_OVERLAP)
+        if found_overlaps:
+            self.pushed = found_overlaps[-1]
+        else:
+            oval = Oval(e.x, e.y, MIN_RAD)
+            oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1, fill=OVAL_COLOR)
+            self.ovals[oval_id] = oval
 
     def on_mouse_left_release(self, e):
-        # print('RELEASED') 
-        pass
+        self.pushed = None
 
     def on_mouse_move(self, e):
         self.cursor_info_label.config(text='x: {}; y: {}'.format(e.x, e.y))
+        if self.pushed:
+            x_center, y_center = self.ovals[self.pushed].get_center_coords()
+            x0, y0, x1, y1 = self.ovals[self.pushed].get_tk_coords()
+            delta_x, delta_y = e.x - x_center, e.y - y_center
+            self.canvas.coords(self.pushed, x0+delta_x, y0+delta_y, x1+delta_x, y1+delta_y)
+            self.ovals[self.pushed].update(delta_x, delta_y)
 
     def clear(self):
-        self.canvas.delete('all')
-        self.ovals = []
-        self.cursor_info_label.config(text='x: 0; y: 0')
+        self.canvas.delete("all")
+        self.ovals = dict()
+        self.pushed = None
+        self.createWidgets()
 
 class Application(tk.Frame):
     """
@@ -96,7 +129,7 @@ class App(Application):
         self.label1 = tk.Label(self, text='TXT field', background='SkyBlue1')
         self.label2 = tk.Label(self, text='Canvas field', background='pink1')
         
-        self.text = CustomText(self, undo=True, font="fixed", inactiveselectbackground="MidnightBlue")
+        self.text = CustomText(self, undo=True, font="fixed")
         self.canvas = CustomCanvas(self)
 
         self.quit_Button.grid(row=0, column=0, sticky='NSEW')
