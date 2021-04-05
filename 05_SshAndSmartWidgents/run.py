@@ -12,10 +12,13 @@ MIN_RAD = 10
 EPS_OVERLAP = 3
 
 class Oval:
-    def __init__(self, x_center, y_center, r):
+    def __init__(self, x_center, y_center, r, fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH):
         self.x_center = x_center
         self.y_center = y_center 
         self.r = r
+        self.fill_color = fill_color
+        self.outline_color = outline_color
+        self.width = width
 
         self.x0 = self.x_center - self.r
         self.y0 = self.y_center - self.r 
@@ -44,7 +47,11 @@ class CustomText(tk.Text):
         super().__init__(master, **kwargs) 
 
     def clear(self):
-        pass
+        self.delete("1.0", tk.END)
+
+    def update_info(self, str_in):
+        self.clear()
+        self.insert("1.0", str_in)
 
 class CustomCanvas(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -77,8 +84,9 @@ class CustomCanvas(tk.Frame):
         if found_overlaps:
             self.pushed = found_overlaps[-1]
         else:
-            oval = Oval(e.x, e.y, MIN_RAD)
-            oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1, fill=OVAL_COLOR, outline=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
+            oval = Oval(e.x, e.y, MIN_RAD, fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
+            oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1,
+                                              fill=oval.fill_color, outline=oval.outline_color, width=oval.width)
             self.ovals[oval_id] = oval
 
     def on_mouse_left_release(self, e):
@@ -129,8 +137,8 @@ class App(Application):
 
     def createWidgets(self):
         self.quit_Button = tk.Button(self, text='Quit', command=self.master.quit)
-        self.update_txt_Button = tk.Button(self, text='Update TXT', command=None)
-        self.update_canvas_Button = tk.Button(self, text='Update Canvas', command=None)
+        self.update_txt_Button = tk.Button(self, text='Update TXT', command=self.update_txt_handler)
+        self.update_canvas_Button = tk.Button(self, text='Update Canvas', command=self.update_canvas_handler)
         self.clear_Button = tk.Button(self, text='Clear', command=self.clear)
 
         self.label1 = tk.Label(self, text='TXT field', background='SkyBlue1')
@@ -147,6 +155,21 @@ class App(Application):
         self.label2.grid(row=2, column=1, sticky='NSEW')
         self.text.grid(row=3, column=0, sticky='NSEW')
         self.canvas.grid(row=3, column=1, sticky='NSEW')
+
+    def update_txt_handler(self):
+        # Each oval is encoded as: ID X0 Y0 X1 Y1 WIDTH IN_COLOR BORDER_COLOR
+        str_out = ""
+        for id_oval, oval in self.canvas.ovals.items():
+            x0, y0, x1, y1 = oval.get_tk_coords()
+            w = oval.width
+            f = oval.fill_color
+            b = oval.outline_color
+            str_out += str(id_oval) + ' ' + ' '.join([str(x0), str(y0), str(x1), str(y1)]) + ' ' + str(w) + ' ' + f + ' ' + b + '\n'
+
+        self.text.update_info(str_out)
+
+    def update_canvas_handler(self):
+        pass
 
     def clear(self):
         self.text.clear()
