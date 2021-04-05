@@ -50,7 +50,7 @@ class CustomCanvas(tk.Frame):
 
     def on_mouse_left_push(self, e):
         oval = Oval(e.x, e.y, 10)
-        self.ovals.append(self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1))
+        self.ovals.append(self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1, fill='VioletRed1'))
 
     def on_mouse_left_release(self, e):
         # print('RELEASED') 
