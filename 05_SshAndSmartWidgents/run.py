@@ -6,6 +6,8 @@ import tkinter as tk
 
 
 OVAL_COLOR = 'VioletRed1'
+OVAL_BORDER_COLOR = 'dark orchid'
+OVAL_BORDER_WIDTH = 2
 MIN_RAD = 10
 EPS_OVERLAP = 3
 
@@ -76,7 +78,7 @@ class CustomCanvas(tk.Frame):
             self.pushed = found_overlaps[-1]
         else:
             oval = Oval(e.x, e.y, MIN_RAD)
-            oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1, fill=OVAL_COLOR)
+            oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1, fill=OVAL_COLOR, outline=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
             self.ovals[oval_id] = oval
 
     def on_mouse_left_release(self, e):
