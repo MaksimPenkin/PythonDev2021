@@ -12,35 +12,26 @@ MIN_RAD = 10
 EPS_OVERLAP = 3
 
 class Oval:
-    def __init__(self, x_center, y_center, r, fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH):
-        self.x_center = x_center
-        self.y_center = y_center 
-        self.r = r
+    def __init__(self, x0, y0, x1, y1, fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH):
+        self.x0 = int(x0)
+        self.y0 = int(y0)
+
+        self.x1 = int(x1)
+        self.y1 = int(y1)
+
         self.fill_color = fill_color
         self.outline_color = outline_color
         self.width = width
 
-        self.x0 = self.x_center - self.r
-        self.y0 = self.y_center - self.r 
-
-        self.x1 = self.x_center + self.r
-        self.y1 = self.y_center + self.r
-
     def get_tk_coords(self):
         return (self.x0, self.y0, self.x1, self.y1)
 
-    def get_center_coords(self):
-        return (self.x_center, self.y_center)
-
     def update(self, delta_x, delta_y):
-        self.x_center += delta_x
-        self.y_center += delta_y 
+        self.x0 = int(self.x0 + delta_x)
+        self.y0 = int(self.y0 + delta_y)
 
-        self.x0 += delta_x
-        self.y0 += delta_y
-
-        self.x1 += delta_x 
-        self.y1 += delta_y
+        self.x1 = int(self.x1 + delta_x)
+        self.y1 = int(self.y1 + delta_y)
 
 class CustomText(tk.Text):
     def __init__(self, master=None, **kwargs):
@@ -84,7 +75,7 @@ class CustomCanvas(tk.Frame):
         if found_overlaps:
             self.pushed = found_overlaps[-1]
         else:
-            oval = Oval(e.x, e.y, MIN_RAD,
+            oval = Oval(e.x - MIN_RAD, e.y - MIN_RAD, e.x + MIN_RAD, e.y + MIN_RAD,
                         fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
             oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1,
                                               fill=oval.fill_color, outline=oval.outline_color, width=oval.width)
@@ -96,10 +87,11 @@ class CustomCanvas(tk.Frame):
     def on_mouse_move(self, e):
         self.cursor_info_label.config(text='x: {}; y: {}'.format(e.x, e.y))
         if self.pushed:
-            x_center, y_center = self.ovals[self.pushed].get_center_coords()
             x0, y0, x1, y1 = self.ovals[self.pushed].get_tk_coords()
+            x_center = (x0 + x1) / 2.0
+            y_center = (y0 + y1) / 2.0
             delta_x, delta_y = e.x - x_center, e.y - y_center
-            self.canvas.coords(self.pushed, x0+delta_x, y0+delta_y, x1+delta_x, y1+delta_y)
+            self.canvas.coords(self.pushed, int(x0+delta_x), int(y0+delta_y), int(x1+delta_x), int(y1+delta_y))
             self.ovals[self.pushed].update(delta_x, delta_y)
 
     def destroyWidgets(self):
@@ -112,6 +104,13 @@ class CustomCanvas(tk.Frame):
         self.pushed = None
         self.destroyWidgets()
         self.createWidgets()
+
+    def update_info(self, ovals_in):
+        self.clear()
+        for _, oval in ovals_in.items():
+            oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1,
+                                              fill=oval.fill_color, outline=oval.outline_color, width=oval.width)
+            self.ovals[oval_id] = oval
 
 class Application(tk.Frame):
     """
@@ -160,17 +159,30 @@ class App(Application):
     def update_txt_handler(self):
         # Each oval is encoded as: ID;X0;Y0;X1;Y1;WIDTH;IN_COLOR;BORDER_COLOR
         str_out = ""
-        for id_oval, oval in self.canvas.ovals.items():
+        for oval_id, oval in self.canvas.ovals.items():
             x0, y0, x1, y1 = oval.get_tk_coords()
             w = oval.width
             f = oval.fill_color
             b = oval.outline_color
-            str_out += str(id_oval) + ';' + ';'.join([str(x0), str(y0), str(x1), str(y1)]) + ';' + str(w) + ';' + f + ';' + b + '\n'
+            str_out += str(oval_id) + ';' + ';'.join([str(x0), str(y0), str(x1), str(y1)]) + ';' + str(w) + ';' + f + ';' + b + '\n'
 
         self.text.update_info(str_out)
 
+    def unpackline(self, line):
+        line_list = line.split(';')
+        id_oval, x0, y0, x1, y1, w, f, b = line.split(';')
+        
+        return id_oval, x0, y0, x1, y1, w, f, b
+
     def update_canvas_handler(self):
-        pass
+        str_list = self.text.get("1.0", tk.END).split('\n')
+        ovals_out = dict()
+        for line in str_list:
+            if line != '':
+                id_oval, x0, y0, x1, y1, w, f, b = self.unpackline(line)
+                ovals_out[id_oval] = Oval(x0, y0, x1, y1, fill_color=f, outline_color=b, width=w)
+
+        self.canvas.update_info(ovals_out)
 
     def clear(self):
         self.text.clear()
