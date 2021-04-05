@@ -84,7 +84,8 @@ class CustomCanvas(tk.Frame):
         if found_overlaps:
             self.pushed = found_overlaps[-1]
         else:
-            oval = Oval(e.x, e.y, MIN_RAD, fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
+            oval = Oval(e.x, e.y, MIN_RAD,
+                        fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
             oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1,
                                               fill=oval.fill_color, outline=oval.outline_color, width=oval.width)
             self.ovals[oval_id] = oval
@@ -157,14 +158,14 @@ class App(Application):
         self.canvas.grid(row=3, column=1, sticky='NSEW')
 
     def update_txt_handler(self):
-        # Each oval is encoded as: ID X0 Y0 X1 Y1 WIDTH IN_COLOR BORDER_COLOR
+        # Each oval is encoded as: ID;X0;Y0;X1;Y1;WIDTH;IN_COLOR;BORDER_COLOR
         str_out = ""
         for id_oval, oval in self.canvas.ovals.items():
             x0, y0, x1, y1 = oval.get_tk_coords()
             w = oval.width
             f = oval.fill_color
             b = oval.outline_color
-            str_out += str(id_oval) + ' ' + ' '.join([str(x0), str(y0), str(x1), str(y1)]) + ' ' + str(w) + ' ' + f + ' ' + b + '\n'
+            str_out += str(id_oval) + ';' + ';'.join([str(x0), str(y0), str(x1), str(y1)]) + ';' + str(w) + ';' + f + ';' + b + '\n'
 
         self.text.update_info(str_out)
 
