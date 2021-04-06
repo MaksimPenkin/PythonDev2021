@@ -110,6 +110,13 @@ class Oval:
         self.x1 = int(self.x1 + delta_x)
         self.y1 = int(self.y1 + delta_y)
 
+    def update_coords(self, x0, y0, x1, y1):
+        self.x0 = int(x0)
+        self.y0 = int(y0)
+
+        self.x1 = int(x1)
+        self.y1 = int(y1)
+
 class CustomText(tk.Text):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs) 
@@ -126,6 +133,7 @@ class CustomCanvas(tk.Frame):
         super().__init__(master, **kwargs) 
         self.ovals = dict()
         self.pushed = None
+        self.pushed_new = None
 
         self.master.rowconfigure(0, weight=1)
         self.master.columnconfigure(0, weight=1)
@@ -157,9 +165,11 @@ class CustomCanvas(tk.Frame):
             oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1,
                                               fill=oval.fill_color, outline=oval.border_color, width=oval.width)
             self.ovals[oval_id] = oval
+            self.pushed_new = oval_id, e.x, e.y
 
     def on_mouse_left_release(self, e):
         self.pushed = None
+        self.pushed_new = None
 
     def on_mouse_move(self, e):
         self.cursor_info_label.config(text='x: {}; y: {}'.format(e.x, e.y))
@@ -170,6 +180,10 @@ class CustomCanvas(tk.Frame):
             delta_x, delta_y = e.x - x_center, e.y - y_center
             self.canvas.coords(self.pushed, int(x0+delta_x), int(y0+delta_y), int(x1+delta_x), int(y1+delta_y))
             self.ovals[self.pushed].update(delta_x, delta_y)
+        if self.pushed_new:
+            oval_id, x_initial, y_initial = self.pushed_new 
+            self.canvas.coords(oval_id, x_initial, y_initial, e.x, e.y)
+            self.ovals[oval_id].update_coords(x_initial, y_initial, e.x, e.y)
 
     def destroyWidgets(self):
         self.canvas.grid_forget()
@@ -179,6 +193,7 @@ class CustomCanvas(tk.Frame):
         self.canvas.delete("all")
         self.ovals = dict()
         self.pushed = None
+        self.pushed_new = None
         self.destroyWidgets()
         self.createWidgets()
 
