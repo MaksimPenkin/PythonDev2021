@@ -103,7 +103,7 @@ class Oval:
     def get_tk_coords(self):
         return (self.x0, self.y0, self.x1, self.y1)
 
-    def update(self, delta_x, delta_y):
+    def update_move(self, delta_x, delta_y):
         self.x0 = int(self.x0 + delta_x)
         self.y0 = int(self.y0 + delta_y)
 
@@ -132,7 +132,7 @@ class CustomCanvas(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs) 
         self.ovals = dict()
-        self.pushed = None
+        self.pushed_old = None
         self.pushed_new = None
 
         self.master.rowconfigure(0, weight=1)
@@ -158,7 +158,7 @@ class CustomCanvas(tk.Frame):
     def on_mouse_left_push(self, e):
         found_overlaps = self.canvas.find_overlapping(e.x-EPS_OVERLAP, e.y-EPS_OVERLAP, e.x+EPS_OVERLAP, e.y+EPS_OVERLAP)
         if found_overlaps:
-            self.pushed = found_overlaps[-1]
+            self.pushed_old = found_overlaps[-1]
         else:
             oval = Oval(e.x - MIN_RAD, e.y - MIN_RAD, e.x + MIN_RAD, e.y + MIN_RAD,
                         fill_color=OVAL_COLOR, border_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
@@ -168,18 +168,18 @@ class CustomCanvas(tk.Frame):
             self.pushed_new = oval_id, e.x, e.y
 
     def on_mouse_left_release(self, e):
-        self.pushed = None
+        self.pushed_old = None
         self.pushed_new = None
 
     def on_mouse_move(self, e):
         self.cursor_info_label.config(text='x: {}; y: {}'.format(e.x, e.y))
-        if self.pushed:
-            x0, y0, x1, y1 = self.ovals[self.pushed].get_tk_coords()
+        if self.pushed_old:
+            x0, y0, x1, y1 = self.ovals[self.pushed_old].get_tk_coords()
             x_center = (x0 + x1) / 2.0
             y_center = (y0 + y1) / 2.0
             delta_x, delta_y = e.x - x_center, e.y - y_center
-            self.canvas.coords(self.pushed, int(x0+delta_x), int(y0+delta_y), int(x1+delta_x), int(y1+delta_y))
-            self.ovals[self.pushed].update(delta_x, delta_y)
+            self.canvas.coords(self.pushed_old, int(x0+delta_x), int(y0+delta_y), int(x1+delta_x), int(y1+delta_y))
+            self.ovals[self.pushed_old].update_move(delta_x, delta_y)
         if self.pushed_new:
             oval_id, x_initial, y_initial = self.pushed_new 
             self.canvas.coords(oval_id, x_initial, y_initial, e.x, e.y)
@@ -192,7 +192,7 @@ class CustomCanvas(tk.Frame):
     def clear(self):
         self.canvas.delete("all")
         self.ovals = dict()
-        self.pushed = None
+        self.pushed_old = None
         self.pushed_new = None
         self.destroyWidgets()
         self.createWidgets()
