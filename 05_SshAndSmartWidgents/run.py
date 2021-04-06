@@ -12,7 +12,7 @@ MIN_RAD = 10
 EPS_OVERLAP = 3
 
 class Oval:
-    def __init__(self, x0, y0, x1, y1, fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH):
+    def __init__(self, x0, y0, x1, y1, fill_color=OVAL_COLOR, border_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH):
         self.x0 = int(x0)
         self.y0 = int(y0)
 
@@ -20,7 +20,7 @@ class Oval:
         self.y1 = int(y1)
 
         self.fill_color = fill_color
-        self.outline_color = outline_color
+        self.border_color = border_color
         self.width = width
 
     def get_tk_coords(self):
@@ -76,9 +76,9 @@ class CustomCanvas(tk.Frame):
             self.pushed = found_overlaps[-1]
         else:
             oval = Oval(e.x - MIN_RAD, e.y - MIN_RAD, e.x + MIN_RAD, e.y + MIN_RAD,
-                        fill_color=OVAL_COLOR, outline_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
+                        fill_color=OVAL_COLOR, border_color=OVAL_BORDER_COLOR, width=OVAL_BORDER_WIDTH)
             oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1,
-                                              fill=oval.fill_color, outline=oval.outline_color, width=oval.width)
+                                              fill=oval.fill_color, outline=oval.border_color, width=oval.width)
             self.ovals[oval_id] = oval
 
     def on_mouse_left_release(self, e):
@@ -109,7 +109,7 @@ class CustomCanvas(tk.Frame):
         self.clear()
         for _, oval in ovals_in.items():
             oval_id = self.canvas.create_oval(oval.x0, oval.y0, oval.x1, oval.y1,
-                                              fill=oval.fill_color, outline=oval.outline_color, width=oval.width)
+                                              fill=oval.fill_color, outline=oval.border_color, width=oval.width)
             self.ovals[oval_id] = oval
 
 class Application(tk.Frame):
@@ -163,7 +163,7 @@ class App(Application):
             x0, y0, x1, y1 = oval.get_tk_coords()
             w = oval.width
             f = oval.fill_color
-            b = oval.outline_color
+            b = oval.border_color
             str_out += str(oval_id) + ';' + ';'.join([str(x0), str(y0), str(x1), str(y1)]) + ';' + str(w) + ';' + f + ';' + b + '\n'
 
         self.text.update_info(str_out)
@@ -180,7 +180,7 @@ class App(Application):
         for line in str_list:
             if line != '':
                 id_oval, x0, y0, x1, y1, w, f, b = self.unpackline(line)
-                ovals_out[id_oval] = Oval(x0, y0, x1, y1, fill_color=f, outline_color=b, width=w)
+                ovals_out[id_oval] = Oval(x0, y0, x1, y1, fill_color=f, border_color=b, width=w)
 
         self.canvas.update_info(ovals_out)
 
