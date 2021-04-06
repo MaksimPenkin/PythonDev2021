@@ -233,10 +233,18 @@ class App(Application):
         self.text.grid(row=3, column=0, sticky='NSEW')
         self.canvas.grid(row=3, column=1, sticky='NSEW')
 
-        self.text.tag_config("E", background='red')
+        self.add_tags()
 
+    def add_tags(self):
+        self.text.tag_config("E", background='red')
+    
+    def refresh_tags(self):
+        for tag in self.text.tag_names():
+            self.text.tag_delete(tag)
+        self.add_tags()
+    
     def update_txt_handler(self):
-        self.remove_tags()
+        self.refresh_tags()
         # Each oval is encoded as: ID;X0;Y0;X1;Y1;WIDTH;IN_COLOR;BORDER_COLOR
         str_out = ""
         for oval_id, oval in self.canvas.ovals.items():
@@ -278,13 +286,8 @@ class App(Application):
             
             return id_oval, x0, y0, x1, y1, w, f, b
 
-    def remove_tags(self):
-        for tag in self.text.tag_names():
-            self.text.tag_delete(tag)
-        self.text.tag_config("E", background='red')
-    
     def update_canvas_handler(self):
-        self.remove_tags()
+        self.refresh_tags()
 
         str_list = self.text.get("1.0", tk.END).split('\n')
         ovals_out = dict()
@@ -298,7 +301,7 @@ class App(Application):
         self.canvas.update_info(ovals_out)
 
     def clear(self):
-        self.remove_tags()
+        self.refresh_tags()
         self.text.clear()
         self.canvas.clear()
 
